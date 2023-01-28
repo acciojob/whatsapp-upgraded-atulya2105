@@ -13,8 +13,8 @@ public class WhatsappService {
     WhatsappRepository whatsappRepository = new WhatsappRepository();
 
     public String createUser(String name,String mobileNo) throws Exception{
-        whatsappRepository.createUser(name,mobileNo);
-        return "SUCCESS";
+
+        return whatsappRepository.createUser(name,mobileNo);
     }
 
     public Group createGroup(List<User> users){
@@ -29,12 +29,12 @@ public class WhatsappService {
 
     public int sendMessage(Message message, User sender, Group group) throws Exception{
         int numberOfMessage = whatsappRepository.sendMessage(message,sender,group);
-        return 0;
+        return numberOfMessage;
     }
 
     public String changeAdmin(User approver, User admin,Group group) throws Exception{
-        whatsappRepository.changeAdmin(approver,admin,group);
-        return "SUCCESS";
+
+        return whatsappRepository.changeAdmin(approver,admin,group);
     }
 
     public int removeUser(User user )throws  Exception{
