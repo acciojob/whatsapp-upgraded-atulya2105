@@ -15,7 +15,7 @@ public class WhatsappRepository {
     HashMap<Integer,Message> msgDb = new LinkedHashMap<>();
     public void createUser (String name, String mobile) throws Exception{
         if(userDb.containsKey(mobile)){
-            throw new Exception();
+            throw new Exception("User already exists");
         }
         userDb.put(mobile,name);
     }
