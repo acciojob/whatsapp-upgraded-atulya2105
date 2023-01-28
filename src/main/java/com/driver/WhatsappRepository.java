@@ -35,7 +35,9 @@ public class WhatsappRepository {
         }else {
             Group group = new Group();
             group.setAdmin(userList.get(0));
-            String nameOfGroup = "Group "+ groupList.size()+1;
+            int n = groupList.size();
+            String nameOfGroup = "Group "+ (n+1);
+            System.out.println(nameOfGroup);
             group.setName(nameOfGroup);
             groupList.add(group);
             group.setNumberOfParticipants(size);
@@ -60,14 +62,15 @@ public class WhatsappRepository {
     }
 
     public int sendMessage(Message message, User user, Group group) throws Exception{
-        List<User> users = group.getUserList();
-        if(!users.contains(user)){
-            throw new Exception("You are not allowed to send message");
-        }
         if(!groupDb.containsKey(group)){
             throw  new Exception("Group does not exist");
 
         }
+        List<User> users = group.getUserList();
+        if(!users.contains(user)){
+            throw new Exception("You are not allowed to send message");
+        }
+
 
         group.getMessageList().add(message);
         List<Message>msg = user.getMessageList();
