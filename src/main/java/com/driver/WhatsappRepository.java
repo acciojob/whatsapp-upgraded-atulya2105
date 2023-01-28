@@ -10,16 +10,19 @@ public class WhatsappRepository {
 
     Map<String,User> userDb = new LinkedHashMap<>();
 
-    List<Group> groupList = new ArrayList<>();
-    Map<String,Group> groupDb = new LinkedHashMap<>();
-    HashMap<Integer,Message> msgDb = new LinkedHashMap<>();
+    Map<Group, List<User>> groupOfUser = new HashMap<>();
+    Map<Group,List<Message>> groupOfMessage = new HashMap<>();
+    List<Message> messageList = new ArrayList<>();
+    HashMap<User,List<Message>> listOfUserMessage = new HashMap<>();
+
+    int groupCount = 0;
+    int msgCount = 0;
     public void createUser (String name, String mobile) throws Exception{
         if(userDb.containsKey(mobile)){
             throw new Exception("User already exists");
         }
-        User user = new User();
-        user.setName(name);
-        user.setMobile(mobile);
+        User user = new User(name,mobile);
+
 
         userDb.put(mobile,user);
     }
@@ -30,95 +33,145 @@ public class WhatsappRepository {
         }
         else if(size==2){
             Group group = new Group();
-            User user = userList.get(0);
-            group.setAdmin(user);
+           // User user = userList.get(0);
+           // group.setAdmin(user);
             group.setName(userList.get(1).getName());
             group.setNumberOfParticipants(2);
-            groupDb.put(userList.get(1).getName(),group);
+            groupOfUser.put(group,userList);
             return group;
         }else {
-            Group group = new Group();
-            group.setAdmin(userList.get(0));
-            int n = groupList.size();
-            String nameOfGroup = "Group "+ (n+1);
-            System.out.println(nameOfGroup);
-            group.setName(nameOfGroup);
-            groupList.add(group);
-            group.setNumberOfParticipants(size);
-            groupDb.put(nameOfGroup,group);
+            Group group=new Group("Group "+ ++groupCount,userList.size());
+            groupOfUser.put(group,userList);
+
             return group;
         }
 
     }
 
     public int createMessage(String content){
-        Message msg = new Message();
-        msg.setContent(content);
-        Date date = new Date();
-        //System.
-        msg.setTimestamp(date);
-        int size = msgDb.size();
-        msg.setId(size+1);
-        msgDb.put(size+1,msg);
-
-        return size+1;
+        Message message=new Message(++msgCount,content);
+        message.setTimestamp(new Date());
+        messageList.add(message);
+        return msgCount;
 
     }
 
 
     public int sendMessage(Message message, User user, Group group) throws Exception{
-        if(!groupDb.containsKey(group.getName())){
+        if(!groupOfUser.containsKey(group)){
             throw  new Exception("Group does not exist");
 
         }
         //groupDb.containsKey(group.getName());
-        List<User> users = group.getUserList();
+        List<User> users = groupOfUser.get(group);
         if(!users.contains(user)){
             throw new Exception("You are not allowed to send message");
         }
 
 
-        group.getMessageList().add(message);
-        List<Message>msg = user.getMessageList();
-        msg.add(message);
-        user.setMessageList(msg);
-        //String name = userDb.getOrDefault();
-        return group.getMessageList().size();
+        if(groupOfMessage.containsKey(group)){
+
+            groupOfMessage.get(group).add(message);
+        }else{
+            List<Message>msg = new ArrayList<>();
+            msg.add(message);
+            groupOfMessage.put(group,msg);
+        }
+
+
+        if(listOfUserMessage.containsKey(user))
+        {
+            listOfUserMessage.get(group).add(message);
+        }
+        else
+        {
+            List<Message> messages=new ArrayList<>();
+            messages.add(message);
+            listOfUserMessage.put(user,messages);
+        }
+
+        return listOfUserMessage.get(group).size();
+
     }
 
-    public void changeAdmin(User approver,User user,Group group) throws Exception{
-        if(!groupDb.containsKey(group.getName())){
-            throw  new Exception("Group does not exist");
+    public void changeAdmin(User approver ,User user,Group group) throws Exception{
 
+        if(!groupOfUser.containsKey(group))
+        {
+            throw new Exception("Group does not exist");
         }
-        List<User> users = group.getUserList();
-        if(!users.contains(approver)){
+
+        User pastAdmin=groupOfUser.get(group).get(0);
+
+        if(!approver.equals(pastAdmin))
+        {
             throw new Exception("Approver does not have rights");
         }
-        if(!users.contains(user)){
+
+        boolean check=false;
+        for(User user1:groupOfUser.get(group))
+        {
+            if(user1.equals(user))   check=true;
+        }
+
+        if(!check)
+        {
             throw new Exception("User is not a participant");
         }
-//        User user1 = group.getAdmin();
-        group.setAdmin(user);
-        groupDb.put(group.getName(),group);
+
+        User newAdmin=null;
+
+        Iterator<User> userIterator = groupOfUser.get(group).iterator();
+
+        while(userIterator.hasNext())
+        {
+            User u= userIterator.next();
+            if(u.equals(user))
+            {
+                newAdmin = u;
+                userIterator.remove();
+            }
+        }
+
+        groupOfUser.get(group).add(0,newAdmin);
+
     }
 
     public int removeUser(User user) throws Exception{
-        for(String group : groupDb.keySet()){
-            List<User> userList = groupDb.get(group).getUserList();
-            User admin = groupDb.get(group).getAdmin();
-            for(User user1 :userList){
-                if(user1.equals(admin) && user1.equals(user)){
+        boolean userFound = false;
+        int groupSize = 0;
+        int messageCount = 0;
+        int overallMessageCount = messageList.size();
+        Group groupToRemoveFrom = null;
+        for (Map.Entry<Group, List<User>> entry : groupOfUser.entrySet()) {
+            List<User> groupUsers = entry.getValue();
+            if (groupUsers.contains(user))
+            {
+                userFound = true;
+                groupToRemoveFrom = entry.getKey();
+                if (groupUsers.get(0).equals(user))
+                {
                     throw new Exception("Cannot remove admin");
-                }else if(user1.equals(user)){
-                    break;
                 }
+                groupUsers.remove(user);
+                groupSize = groupUsers.size();
+                break;
             }
-            Group group1 = groupDb.get(group);
-            group1.getUserList().remove(user);
-//            user.getGroup();
-            return 0;
         }
-        throw new Exception("User not found");
-    }
+        if (!userFound)
+        {
+            throw new Exception("User not found");
+        }
+
+        if (groupOfMessage.containsKey(user))
+        {
+            messageCount = groupOfMessage.get(user).size() - 2;
+            groupOfMessage.remove(user);
+        }
+
+
+        return groupSize + messageCount + overallMessageCount;
+        }
+
+
 }
