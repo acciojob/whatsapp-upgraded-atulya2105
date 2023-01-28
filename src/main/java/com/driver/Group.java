@@ -7,6 +7,11 @@ public class Group {
     private String name;
     private int numberOfParticipants;
 
+    public Group(String name, int numberOfParticipants) {
+        this.name = name;
+        this.numberOfParticipants = numberOfParticipants;
+    }
+
     private User admin;
     private List<User> userList = new ArrayList<>();
     private List<Message> messageList = new ArrayList<>();

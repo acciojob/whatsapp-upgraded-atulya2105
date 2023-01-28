@@ -22,6 +22,11 @@ public class Message {
         return message;
     }
 
+    public Message(int id, String content) {
+        this.id = id;
+        this.content = content;
+    }
+
     public void setMessage(Message message) {
         this.message = message;
     }
