@@ -61,11 +61,13 @@ public class WhatsappRepository {
 
     }
 
+
     public int sendMessage(Message message, User user, Group group) throws Exception{
-        if(!groupDb.containsKey(group)){
+        if(!groupDb.containsKey(group.getName())){
             throw  new Exception("Group does not exist");
 
         }
+        //groupDb.containsKey(group.getName());
         List<User> users = group.getUserList();
         if(!users.contains(user)){
             throw new Exception("You are not allowed to send message");
@@ -81,7 +83,7 @@ public class WhatsappRepository {
     }
 
     public void changeAdmin(User approver,User user,Group group) throws Exception{
-        if(!groupDb.containsKey(group)){
+        if(!groupDb.containsKey(group.getName())){
             throw  new Exception("Group does not exist");
 
         }
