@@ -8,7 +8,7 @@ import java.util.*;
 @Repository
 public class WhatsappRepository {
 
-    Map<String,String> userDb = new LinkedHashMap<>();
+    Map<String,User> userDb = new LinkedHashMap<>();
 
     List<Group> groupList = new ArrayList<>();
     Map<String,Group> groupDb = new LinkedHashMap<>();
@@ -17,7 +17,11 @@ public class WhatsappRepository {
         if(userDb.containsKey(mobile)){
             throw new Exception("User already exists");
         }
-        userDb.put(mobile,name);
+        User user = new User();
+        user.setName(name);
+        user.setMobile(mobile);
+
+        userDb.put(mobile,user);
     }
     public Group createGroup(List<User>userList){
         int size = userList.size();

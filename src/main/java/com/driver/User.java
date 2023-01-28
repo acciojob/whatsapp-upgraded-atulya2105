@@ -14,6 +14,7 @@ public class User {
         return messageList;
     }
 
+
     public void setMessageList(List<Message> messageList) {
         this.messageList = messageList;
     }
